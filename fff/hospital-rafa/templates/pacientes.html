@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Pacientes — Hospital Rafá{% endblock %}
+{% block header_title %}Gestión de Pacientes{% endblock %}
+{% block header_sub %}Registro e historial de pacientes{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h2>Pacientes</h2><p>{{ pacientes|length }} pacientes registrados</p></div>
+  <button class="btn btn-primary" onclick="abrirModal('modalPaciente')">＋ Nuevo Paciente</button>
+</div>
+<div class="search-bar">
+  <form method="GET" style="display:flex;gap:8px;flex:1">
+    <div class="search-wrap" style="flex:1"><span>🔍</span>
+      <input type="text" name="q" value="{{ q }}" placeholder="Buscar paciente...">
+    </div>
+    <button type="submit" class="btn btn-navy btn-sm">Buscar</button>
+  </form>
+</div>
+<div class="panel">
+  <table>
+    <thead><tr><th>Nombre</th><th>DPI</th><th>Teléfono</th><th>Correo</th><th>Registrado</th><th>Acciones</th></tr></thead>
+    <tbody>
+      {% for p in pacientes %}
+      <tr>
+        <td><strong>{{ p.nombre }}</strong></td>
+        <td>{{ p.dpi or '—' }}</td>
+        <td>{{ p.telefono or '—' }}</td>
+        <td>{{ p.correo or '—' }}</td>
+        <td style="font-size:11px;color:var(--gray-400)">{{ p.creado.strftime('%d/%m/%Y') }}</td>
+        <td><a href="/pacientes/{{ p.id }}" class="btn btn-outline btn-sm">👁️ Ver</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--gray-400)">Sin pacientes registrados</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="modal-overlay" id="modalPaciente">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Registrar Paciente</span>
+      <button class="modal-close" onclick="cerrarModal('modalPaciente')">✕</button>
+    </div>
+    <form method="POST" action="/pacientes/nuevo">
+      <div class="modal-body">
+        <div class="form-grid-2">
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Nombre Completo *</label>
+            <input class="form-input" name="nombre" required placeholder="Nombre del paciente">
+          </div>
+          <div class="form-group">
+            <label class="form-label">DPI / Documento</label>
+            <input class="form-input" name="dpi" placeholder="Número de DPI">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fecha de Nacimiento</label>
+            <input class="form-input" name="fecha_nacimiento" type="date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <input class="form-input" name="telefono" placeholder="Número de teléfono">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Correo Electrónico</label>
+            <input class="form-input" name="correo" type="email" placeholder="correo@ejemplo.com">
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Dirección</label>
+            <input class="form-input" name="direccion" placeholder="Dirección del paciente">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="cerrarModal('modalPaciente')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">💾 Registrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

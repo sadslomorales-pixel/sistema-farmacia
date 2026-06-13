@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}{{ paciente.nombre }} — Hospital Rafá{% endblock %}
+{% block header_title %}{{ paciente.nombre }}{% endblock %}
+{% block header_sub %}Expediente del paciente{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h2>{{ paciente.nombre }}</h2><p>Expediente #{{ paciente.id }}</p></div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-outline" onclick="abrirModal('modalEditar')">✏️ Editar</button>
+    <a href="/pacientes" class="btn btn-navy">← Volver</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 2fr;gap:14px">
+  <div class="panel">
+    <div class="panel-header"><span class="panel-title">👤 Datos del Paciente</span></div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div style="text-align:center;padding:20px 0">
+        <div style="width:70px;height:70px;background:linear-gradient(135deg,var(--navy),var(--teal));border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:28px;font-weight:700;margin:0 auto">{{ paciente.nombre[0] }}</div>
+        <div style="font-weight:700;font-size:16px;margin-top:10px;color:var(--navy)">{{ paciente.nombre }}</div>
+        <div style="font-size:12px;color:var(--gray-400)">Paciente #{{ paciente.id }}</div>
+      </div>
+      {% for label, val in [('📄 DPI', paciente.dpi or '—'),('🎂 Nacimiento', paciente.fecha_nacimiento.strftime('%d/%m/%Y') if paciente.fecha_nacimiento else '—'),('📱 Teléfono', paciente.telefono or '—'),('📧 Correo', paciente.correo or '—'),('📍 Dirección', paciente.direccion or '—'),('📅 Registrado', paciente.creado.strftime('%d/%m/%Y'))] %}
+      <div style="display:flex;flex-direction:column;gap:2px;padding:10px;background:var(--gray-50);border-radius:8px">
+        <div style="font-size:10px;font-weight:600;color:var(--gray-400)">{{ label.split(' ')[0] }} {{ label.split(' ')[1] if label.split(' ')|length > 1 }}</div>
+        <div style="font-size:13px;font-weight:500">{{ val }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><span class="panel-title">🛒 Historial de Compras ({{ historial|length }})</span></div>
+    <table>
+      <thead><tr><th>#</th><th>Fecha</th><th>Productos</th><th>Total</th><th>Pago</th></tr></thead>
+      <tbody>
+        {% for v in historial %}
+        <tr>
+          <td>#{{ v.id }}</td>
+          <td style="font-size:11px">{{ v.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>{{ v.items|length }} items</td>
+          <td style="font-weight:700;color:var(--teal)">Q{{ "%.2f"|format(v.total) }}</td>
+          <td><span class="tag tag-ok">{{ v.metodo_pago|capitalize }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--gray-400)">Sin historial de compras</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalEditar">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Editar Paciente</span>
+      <button class="modal-close" onclick="cerrarModal('modalEditar')">✕</button>
+    </div>
+    <form method="POST" action="/pacientes/editar/{{ paciente.id }}">
+      <div class="modal-body">
+        <div class="form-grid-2">
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Nombre</label>
+            <input class="form-input" name="nombre" value="{{ paciente.nombre }}" required>
+          </div>
+          <div class="form-group"><label class="form-label">DPI</label><input class="form-input" name="dpi" value="{{ paciente.dpi or '' }}"></div>
+          <div class="form-group"><label class="form-label">Nacimiento</label><input class="form-input" name="fecha_nacimiento" type="date" value="{{ paciente.fecha_nacimiento.strftime('%Y-%m-%d') if paciente.fecha_nacimiento else '' }}"></div>
+          <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" name="telefono" value="{{ paciente.telefono or '' }}"></div>
+          <div class="form-group"><label class="form-label">Correo</label><input class="form-input" name="correo" value="{{ paciente.correo or '' }}"></div>
+          <div class="form-group" style="grid-column:1/-1"><label class="form-label">Dirección</label><input class="form-input" name="direccion" value="{{ paciente.direccion or '' }}"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="cerrarModal('modalEditar')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">💾 Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

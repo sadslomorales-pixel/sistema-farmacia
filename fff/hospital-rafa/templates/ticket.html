@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Ticket #{{ venta.id }} — Hospital Rafá</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Montserrat:wght@700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f5f5f5;display:flex;justify-content:center;padding:20px}
+.ticket{background:white;width:320px;padding:24px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.header{text-align:center;margin-bottom:16px}
+.logo{font-size:40px;margin-bottom:8px}
+.hospital-name{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:800;color:#1B3A6B}
+.tagline{font-size:10px;color:#94A3B8;margin-top:2px;line-height:1.4}
+.divider{border:none;border-top:1px dashed #E2E8F0;margin:14px 0}
+.info-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px}
+.info-label{color:#94A3B8}
+.info-val{font-weight:600;color:#1E293B}
+.items{margin:14px 0}
+.item{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;padding:6px;background:#F8FAFC;border-radius:6px}
+.item-name{flex:1;color:#1E293B}
+.item-total{font-weight:700;color:#2A9D8F}
+.totals{margin-top:14px}
+.total-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.grand-row{display:flex;justify-content:space-between;background:#E8F7F5;padding:10px;border-radius:8px;margin-top:10px}
+.grand-label{font-size:14px;font-weight:700;color:#2A9D8F}
+.grand-val{font-size:18px;font-weight:800;color:#1B3A6B;font-family:'Montserrat',sans-serif}
+.footer{text-align:center;font-size:10px;color:#94A3B8;margin-top:16px;line-height:1.6}
+.btn-area{display:flex;gap:10px;justify-content:center;margin-top:16px}
+.btn{padding:8px 20px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.btn-navy{background:#1B3A6B;color:white}
+.btn-outline{background:white;border:1px solid #E2E8F0;color:#475569}
+@media print{.btn-area{display:none}body{background:white}  .ticket{box-shadow:none}}
+</style>
+</head>
+<body>
+<div>
+  <div class="ticket" id="ticketContent">
+    <div class="header">
+      <div class="logo">🏥</div>
+      <div class="hospital-name">HOSPITAL RAFÁ</div>
+      <div class="tagline">Tu salud y la de tu familia<br>en manos profesionales</div>
+    </div>
+    <hr class="divider">
+    <div class="info-row"><span class="info-label">Ticket #</span><span class="info-val">{{ venta.id }}</span></div>
+    <div class="info-row"><span class="info-label">Fecha</span><span class="info-val">{{ venta.fecha.strftime('%d/%m/%Y') }}</span></div>
+    <div class="info-row"><span class="info-label">Hora</span><span class="info-val">{{ venta.fecha.strftime('%H:%M') }}</span></div>
+    <div class="info-row"><span class="info-label">Paciente</span><span class="info-val">{{ venta.paciente_nombre }}</span></div>
+    <div class="info-row"><span class="info-label">Método de pago</span><span class="info-val">{{ venta.metodo_pago|capitalize }}</span></div>
+    {% if venta.con_receta %}<div class="info-row"><span class="info-label">Receta médica</span><span class="info-val">✅ Sí</span></div>{% endif %}
+    <hr class="divider">
+    <div class="items">
+      {% for item in venta.items %}
+      <div class="item">
+        <div class="item-name">{{ item.producto_nombre }}<br><span style="font-size:10px;color:#94A3B8">{{ item.cantidad }} x Q{{ "%.2f"|format(item.precio_unit) }}</span></div>
+        <div class="item-total">Q{{ "%.2f"|format(item.subtotal) }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <hr class="divider">
+    <div class="totals">
+      <div class="total-row"><span style="color:#94A3B8">Subtotal</span><span>Q{{ "%.2f"|format(venta.subtotal) }}</span></div>
+      {% if venta.descuento > 0 %}<div class="total-row"><span style="color:#E53E3E">Descuento</span><span style="color:#E53E3E">-Q{{ "%.2f"|format(venta.descuento) }}</span></div>{% endif %}
+      <div class="grand-row">
+        <span class="grand-label">TOTAL</span>
+        <span class="grand-val">Q{{ "%.2f"|format(venta.total) }}</span>
+      </div>
+    </div>
+    <div class="footer">¡Gracias por su preferencia!<br>Hospital Rafá — Todos los derechos reservados</div>
+  </div>
+  <div class="btn-area">
+    <button class="btn btn-outline" onclick="window.close()">Cerrar</button>
+    <button class="btn btn-navy" onclick="window.print()">🖨️ Imprimir</button>
+  </div>
+</div>
+</body>
+</html>

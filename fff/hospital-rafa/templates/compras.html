@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Compras — Hospital Rafá{% endblock %}
+{% block header_title %}Registro de Compras{% endblock %}
+{% block header_sub %}Entradas de mercadería y proveedores{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h2>Compras</h2><p>Entradas de inventario</p></div>
+  <button class="btn btn-primary" onclick="abrirModal('modalCompra')">＋ Registrar Compra</button>
+</div>
+<div class="panel">
+  <table>
+    <thead><tr><th>Fecha</th><th>Proveedor</th><th>Producto</th><th>Cantidad</th><th>Costo Unit.</th><th>Total</th></tr></thead>
+    <tbody>
+      {% for c in compras %}
+      <tr>
+        <td style="font-size:11px">{{ c.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ c.proveedor or '—' }}</td>
+        <td><strong>{{ c.producto_nombre }}</strong></td>
+        <td><strong style="color:var(--teal)">{{ c.cantidad }}</strong> unidades</td>
+        <td>Q{{ "%.2f"|format(c.costo_unit) }}</td>
+        <td style="font-weight:700;color:var(--navy)">Q{{ "%.2f"|format(c.total) }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--gray-400)">Sin compras registradas</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="modal-overlay" id="modalCompra">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Registrar Compra / Entrada</span>
+      <button class="modal-close" onclick="cerrarModal('modalCompra')">✕</button>
+    </div>
+    <form method="POST" action="/compras/nueva">
+      <div class="modal-body">
+        <div class="form-grid-2">
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Producto *</label>
+            <select class="form-select" name="producto_id" required>
+              {% for p in productos %}<option value="{{ p.id }}">{{ p.nombre }} (Stock actual: {{ p.stock }})</option>{% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Proveedor</label>
+            <input class="form-input" name="proveedor" placeholder="Nombre del proveedor">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cantidad *</label>
+            <input class="form-input" name="cantidad" type="number" min="1" value="1" required>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Costo Unitario (Q)</label>
+            <input class="form-input" name="costo_unit" type="number" step="0.01" value="0">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="cerrarModal('modalCompra')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">📦 Registrar Entrada</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

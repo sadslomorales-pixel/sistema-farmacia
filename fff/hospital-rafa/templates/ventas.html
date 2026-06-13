@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+{% block title %}Nueva Venta — Hospital Rafá{% endblock %}
+{% block header_title %}Nueva Venta{% endblock %}
+{% block header_sub %}Punto de venta — Farmacia{% endblock %}
+{% block extra_css %}
+<style>
+.pos-layout{display:grid;grid-template-columns:1fr 360px;gap:14px;height:calc(100vh - 100px)}
+.pos-left{display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.pos-search{background:#fff;border-radius:12px;border:1px solid var(--gray-200);padding:12px;display:flex;gap:8px}
+.pos-search input{flex:1;padding:9px 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:13px;outline:none;font-family:'Inter',sans-serif}
+.pos-search input:focus{border-color:var(--teal)}
+.pos-grid-wrap{flex:1;background:#fff;border-radius:12px;border:1px solid var(--gray-200);overflow-y:auto;padding:12px}
+.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.p-card{border:1.5px solid var(--gray-200);border-radius:10px;padding:14px 10px;cursor:pointer;transition:all .15s;text-align:center}
+.p-card:hover{border-color:var(--teal);background:var(--teal-pale);transform:translateY(-1px)}
+.p-card.agotado{opacity:.4;cursor:not-allowed;pointer-events:none}
+.p-icon{font-size:26px;margin-bottom:6px}
+.p-name{font-size:11px;font-weight:600;color:var(--navy);line-height:1.3}
+.p-price{font-size:14px;font-weight:800;color:var(--teal);margin-top:4px}
+.p-stock{font-size:10px;color:var(--gray-400);margin-top:2px}
+.pos-cart{background:#fff;border-radius:12px;border:1px solid var(--gray-200);display:flex;flex-direction:column;overflow:hidden}
+.cart-header{padding:14px 16px;background:var(--navy);color:#fff}
+.cart-title{font-size:14px;font-weight:700}
+.cart-subtitle{font-size:11px;opacity:.6;margin-top:2px}
+.cart-body{flex:1;overflow-y:auto;padding:8px}
+.cart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;color:var(--gray-400);font-size:13px;gap:8px}
+.cart-item{display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;border:1px solid var(--gray-100);margin-bottom:6px;background:var(--gray-50)}
+.ci-name{font-size:12px;font-weight:600;flex:1;line-height:1.3}
+.ci-price{font-size:11px;color:var(--teal);font-weight:700}
+.qty-ctrl{display:flex;align-items:center;gap:4px}
+.qty-btn{width:24px;height:24px;border-radius:6px;border:1px solid var(--gray-200);background:#fff;cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--navy)}
+.qty-btn:hover{background:var(--teal-pale);border-color:var(--teal)}
+.qty-num{font-size:13px;font-weight:700;width:22px;text-align:center}
+.cart-footer{padding:12px 16px;border-top:1px solid var(--gray-100)}
+.total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:12px;color:var(--gray-600)}
+.total-row strong{color:var(--gray-800)}
+.grand-total{display:flex;justify-content:space-between;align-items:center;background:var(--teal-pale);padding:10px 12px;border-radius:10px;margin:10px 0}
+.gt-label{font-size:14px;font-weight:700;color:var(--teal)}
+.gt-val{font-size:22px;font-weight:800;color:var(--navy);font-family:'Montserrat',sans-serif}
+.cart-field{margin-bottom:8px}
+.cart-field input,.cart-field select{width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:8px;font-size:12px;outline:none;font-family:'Inter',sans-serif}
+.cart-field input:focus,.cart-field select:focus{border-color:var(--teal)}
+.cart-field label{font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px}
+.metodo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+.metodo-btn{padding:7px 4px;border:1.5px solid var(--gray-200);border-radius:8px;background:#fff;cursor:pointer;font-size:11px;font-weight:600;text-align:center;transition:all .15s;color:var(--gray-600)}
+.metodo-btn.active{border-color:var(--teal);background:var(--teal-pale);color:var(--teal)}
+.receta-check{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;color:var(--gray-600);cursor:pointer}
+</style>
+{% endblock %}
+{% block content %}
+<div class="pos-layout">
+  <div class="pos-left">
+    <div class="pos-search">
+      <input type="text" id="searchInput" placeholder="🔍 Buscar medicamento por nombre..." oninput="buscarProductos(this.value)">
+      <button class="btn btn-outline btn-sm" onclick="escanearCodigo()">📷 Código</button>
+    </div>
+    <div class="pos-grid-wrap">
+      <div class="products-grid" id="productsGrid">
+        {% for p in productos %}
+        <div class="p-card {{ 'agotado' if p.stock == 0 }}" onclick="agregarItem({{ p.id }},'{{ p.nombre }}',{{ p.precio }},{{ p.stock }})">
+          <div class="p-icon">{{ '💊' if p.categoria == 'Antibióticos' else '🩹' if p.categoria == 'Analgésicos' else '🔴' if p.categoria == 'Antiinflamatorios' else '🟡' if p.categoria == 'Vitaminas' else '❤️' if p.categoria == 'Cardiovascular' else '🟢' if p.categoria == 'Digestivo' else '🫁' if p.categoria == 'Respiratorio' else '🧴' if p.categoria == 'Dermatológico' else '📦' }}</div>
+          <div class="p-name">{{ p.nombre }}</div>
+          <div class="p-price">Q{{ "%.2f"|format(p.precio) }}</div>
+          <div class="p-stock">{{ 'Sin stock' if p.stock == 0 else 'Stock: ' ~ p.stock }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="pos-cart">
+    <div class="cart-header">
+      <div class="cart-title">🛒 Carrito de Venta</div>
+      <div class="cart-subtitle">Hospital Rafá — Farmacia</div>
+    </div>
+    <div class="cart-body" id="cartBody">
+      <div class="cart-empty" id="cartEmpty">
+        <span style="font-size:36px">💊</span>
+        <span>Selecciona un producto</span>
+      </div>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-field">
+        <label>👤 Paciente</label>
+        <select id="selectPaciente" onchange="setPaciente(this)">
+          <option value="">Cliente general</option>
+          {% for p in pacientes %}
+          <option value="{{ p.id }}" data-nombre="{{ p.nombre }}">{{ p.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="cart-field">
+        <label>💳 Método de pago</label>
+        <div class="metodo-grid">
+          <div class="metodo-btn active" onclick="setMetodo('efectivo',this)">💵 Efectivo</div>
+          <div class="metodo-btn" onclick="setMetodo('tarjeta',this)">💳 Tarjeta</div>
+          <div class="metodo-btn" onclick="setMetodo('transferencia',this)">🏦 Transf.</div>
+        </div>
+      </div>
+      <div class="cart-field">
+        <label>🏷️ Descuento (Q)</label>
+        <input type="number" id="descuento" min="0" step="0.01" value="0" oninput="actualizarTotales()">
+      </div>
+      <label class="receta-check">
+        <input type="checkbox" id="conReceta"> Con receta médica
+      </label>
+      <div class="total-row"><span>Subtotal</span><strong id="subtotalVal">Q0.00</strong></div>
+      <div class="total-row"><span>Descuento</span><strong id="descuentoVal" style="color:var(--red)">-Q0.00</strong></div>
+      <div class="grand-total">
+        <span class="gt-label">TOTAL</span>
+        <span class="gt-val" id="totalVal">Q0.00</span>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" style="flex:1" onclick="limpiarCarrito()">🗑️ Limpiar</button>
+        <button class="btn btn-primary" style="flex:2" onclick="procesarVenta()">✅ Cobrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TICKET -->
+<div class="modal-overlay" id="modalTicket">
+  <div class="modal" style="width:340px">
+    <div class="modal-header">
+      <span class="modal-title">🧾 Ticket de Venta</span>
+      <button class="modal-close" onclick="cerrarModal('modalTicket')">✕</button>
+    </div>
+    <div class="modal-body" id="ticketBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="cerrarModal('modalTicket')">Cerrar</button>
+      <button class="btn btn-navy" onclick="imprimirTicket()">🖨️ Imprimir</button>
+      <button class="btn btn-primary" onclick="descargarPDF()">📄 PDF</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+let carrito = [];
+let metodoPago = 'efectivo';
+let pacienteId = null;
+let pacienteNombre = 'Cliente general';
+
+function agregarItem(id, nombre, precio, stock) {
+  const ex = carrito.find(c => c.id === id);
+  if (ex) {
+    if (ex.qty >= stock) { toast('⚠️ Stock insuficiente'); return; }
+    ex.qty++;
+  } else {
+    carrito.push({id, nombre, precio, qty: 1, stockMax: stock});
+  }
+  renderCarrito();
+}
+
+function renderCarrito() {
+  const body = document.getElementById('cartBody');
+  const empty = document.getElementById('cartEmpty');
+  if (carrito.length === 0) {
+    body.innerHTML = '<div class="cart-empty" id="cartEmpty"><span style="font-size:36px">💊</span><span>Selecciona un producto</span></div>';
+    actualizarTotales(); return;
+  }
+  body.innerHTML = carrito.map(item => `
+    <div class="cart-item">
+      <div style="flex:1">
+        <div class="ci-name">${item.nombre}</div>
+        <div class="ci-price">Q${(item.precio * item.qty).toFixed(2)}</div>
+      </div>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="cambiarQty(${item.id},-1)">−</button>
+        <span class="qty-num">${item.qty}</span>
+        <button class="qty-btn" onclick="cambiarQty(${item.id},1)">+</button>
+      </div>
+    </div>
+  `).join('');
+  actualizarTotales();
+}
+
+function cambiarQty(id, delta) {
+  const idx = carrito.findIndex(c => c.id === id);
+  if (idx === -1) return;
+  carrito[idx].qty += delta;
+  if (carrito[idx].qty <= 0) carrito.splice(idx, 1);
+  renderCarrito();
+}
+
+function actualizarTotales() {
+  const sub = carrito.reduce((s,i) => s + i.precio * i.qty, 0);
+  const desc = parseFloat(document.getElementById('descuento').value) || 0;
+  const total = Math.max(0, sub - desc);
+  document.getElementById('subtotalVal').textContent = 'Q' + sub.toFixed(2);
+  document.getElementById('descuentoVal').textContent = '-Q' + desc.toFixed(2);
+  document.getElementById('totalVal').textContent = 'Q' + total.toFixed(2);
+}
+
+function limpiarCarrito() { carrito = []; renderCarrito(); }
+
+function setMetodo(m, el) {
+  metodoPago = m;
+  document.querySelectorAll('.metodo-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function setPaciente(sel) {
+  pacienteId = sel.value || null;
+  const opt = sel.options[sel.selectedIndex];
+  pacienteNombre = opt.dataset.nombre || 'Cliente general';
+}
+
+async function procesarVenta() {
+  if (carrito.length === 0) { toast('⚠️ El carrito está vacío'); return; }
+  const desc = parseFloat(document.getElementById('descuento').value) || 0;
+  const conReceta = document.getElementById('conReceta').checked;
+  const res = await fetch('/ventas/procesar', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      items: carrito.map(c => ({id:c.id, nombre:c.nombre, precio:c.precio, cantidad:c.qty})),
+      paciente_id: pacienteId, paciente_nombre: pacienteNombre,
+      metodo_pago: metodoPago, descuento: desc, con_receta: conReceta
+    })
+  });
+  const data = await res.json();
+  if (data.ok) {
+    mostrarTicket(data.venta_id, data.total);
+    limpiarCarrito();
+    toast('✅ Venta registrada correctamente');
+  } else {
+    toast('❌ ' + (data.error || 'Error al procesar'));
+  }
+}
+
+function mostrarTicket(ventaId, total) {
+  const sub = carrito.length > 0 ? carrito.reduce((s,i) => s+i.precio*i.qty,0) : total;
+  const desc = parseFloat(document.getElementById('descuento').value)||0;
+  document.getElementById('ticketBody').innerHTML = `
+    <div style="text-align:center;font-family:'Inter',sans-serif">
+      <div style="font-size:32px;margin-bottom:8px">🏥</div>
+      <div style="font-family:'Montserrat',sans-serif;font-size:16px;font-weight:800;color:var(--navy)">HOSPITAL RAFÁ</div>
+      <div style="font-size:10px;color:var(--gray-400);margin:4px 0">Tu salud y la de tu familia en manos profesionales</div>
+      <div style="border-top:1px dashed var(--gray-200);margin:12px 0"></div>
+      <div style="font-size:12px"><strong>Ticket #${ventaId}</strong></div>
+      <div style="font-size:11px;color:var(--gray-400)">${new Date().toLocaleString('es')}</div>
+      <div style="font-size:11px;margin-top:4px">Paciente: ${pacienteNombre}</div>
+      <div style="font-size:11px">Pago: ${metodoPago.charAt(0).toUpperCase()+metodoPago.slice(1)}</div>
+      <div style="border-top:1px dashed var(--gray-200);margin:10px 0"></div>
+      ${carrito.length > 0 ? carrito.map(i=>`<div style="display:flex;justify-content:space-between;font-size:11px;margin:4px 0"><span>${i.nombre} x${i.qty}</span><span>Q${(i.precio*i.qty).toFixed(2)}</span></div>`).join('') : ''}
+      <div style="border-top:1px dashed var(--gray-200);margin:10px 0"></div>
+      ${desc>0?`<div style="display:flex;justify-content:space-between;font-size:11px;margin:4px 0;color:var(--red)"><span>Descuento</span><span>-Q${desc.toFixed(2)}</span></div>`:''}
+      <div style="display:flex;justify-content:space-between;font-weight:800;font-size:15px;margin-top:6px"><span>TOTAL</span><span style="color:var(--navy)">Q${total.toFixed(2)}</span></div>
+      <div style="font-size:10px;color:var(--gray-400);margin-top:12px">¡Gracias por su preferencia!</div>
+    </div>
+  `;
+  abrirModal('modalTicket');
+}
+
+function imprimirTicket() { window.print(); }
+
+function descargarPDF() {
+  window.open('/ventas/ticket/' + Date.now(), '_blank');
+  toast('📄 Generando PDF...');
+}
+
+function escanearCodigo() {
+  const codigo = prompt('Ingresa el código de barras:');
+  if (!codigo) return;
+  fetch('/api/producto/barcode/' + codigo)
+    .then(r => r.json())
+    .then(d => {
+      if (d.id) agregarItem(d.id, d.nombre, d.precio, d.stock);
+      else toast('❌ Producto no encontrado');
+    });
+}
+
+function buscarProductos(q) {
+  if (!q) { location.reload(); return; }
+  fetch('/api/productos?q=' + encodeURIComponent(q))
+    .then(r => r.json())
+    .then(data => {
+      const icons = {'Antibióticos':'💊','Analgésicos':'🩹','Antiinflamatorios':'🔴','Vitaminas':'🟡','Cardiovascular':'❤️','Digestivo':'🟢','Respiratorio':'🫁','Dermatológico':'🧴'};
+      document.getElementById('productsGrid').innerHTML = data.map(p => `
+        <div class="p-card" onclick="agregarItem(${p.id},'${p.nombre.replace(/'/g,"\\'")}',${p.precio},${p.stock})">
+          <div class="p-icon">${icons[p.categoria]||'📦'}</div>
+          <div class="p-name">${p.nombre}</div>
+          <div class="p-price">Q${p.precio.toFixed(2)}</div>
+          <div class="p-stock">Stock: ${p.stock}</div>
+        </div>
+      `).join('') || '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--gray-400)">Sin resultados</div>';
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — Hospital Rafá{% endblock %}
+{% block header_title %}Dashboard General{% endblock %}
+{% block header_sub %}Resumen del sistema{% endblock %}
+{% block content %}
+<div class="stats-grid">
+  {% if 'ventas' in permisos %}
+  <div class="stat-card navy">
+    <div class="stat-icon">💰</div>
+    <div class="stat-value">Q{{ "%.2f"|format(stats.total_hoy or 0) }}</div>
+    <div class="stat-label">Ventas del día</div>
+    <div class="stat-sub">{{ stats.ventas_hoy or 0 }} transacciones</div>
+  </div>
+  {% endif %}
+  {% if 'inventario' in permisos %}
+  <div class="stat-card teal">
+    <div class="stat-icon">💊</div>
+    <div class="stat-value">{{ stats.total_productos or 0 }}</div>
+    <div class="stat-label">Productos en stock</div>
+    <div class="stat-sub">{{ stats.stock_bajo or 0 }} con stock bajo</div>
+  </div>
+  {% endif %}
+  {% if 'pacientes' in permisos %}
+  <div class="stat-card green">
+    <div class="stat-icon">👤</div>
+    <div class="stat-value">{{ stats.total_pacientes or 0 }}</div>
+    <div class="stat-label">Pacientes registrados</div>
+  </div>
+  {% endif %}
+  <div class="stat-card red">
+    <div class="stat-icon">🔔</div>
+    <div class="stat-value">{{ stats.total_alertas or 0 }}</div>
+    <div class="stat-label">Alertas activas</div>
+    <div class="stat-sub">Requieren atención</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+  {% if 'ventas' in permisos and stats.ultimas_ventas %}
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">📋 Últimas Ventas</span>
+      <a href="/historial" class="btn btn-outline btn-sm">Ver todas</a>
+    </div>
+    <table>
+      <thead><tr><th>#</th><th>Paciente</th><th>Total</th><th>Hora</th></tr></thead>
+      <tbody>
+        {% for v in stats.ultimas_ventas %}
+        <tr>
+          <td>#{{ v.id }}</td>
+          <td>{{ v.paciente_nombre }}</td>
+          <td style="font-weight:700;color:var(--teal)">Q{{ "%.2f"|format(v.total) }}</td>
+          <td style="font-size:11px;color:var(--gray-400)">{{ v.fecha.strftime('%H:%M') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">🔔 Alertas del Sistema</span>
+      {% if 'alertas' in permisos %}<a href="/alertas" class="btn btn-outline btn-sm">Ver todas</a>{% endif %}
+    </div>
+    <div style="padding:12px">
+      {% if stats.alertas %}
+        {% for a in stats.alertas %}
+        <div class="alert alert-{{ a.tipo }}">{{ '⚠️' if a.tipo == 'warning' else '❌' }} {{ a.msg }}</div>
+        {% endfor %}
+      {% else %}
+        <div class="alert alert-success">✅ Todo en orden — Sin alertas críticas</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:14px">
+  <div class="panel">
+    <div class="panel-header"><span class="panel-title">⚡ Accesos Rápidos</span></div>
+    <div style="padding:16px;display:flex;flex-wrap:wrap;gap:10px">
+      {% if 'ventas' in permisos %}<a href="/ventas" class="btn btn-primary">🛒 Nueva Venta</a>{% endif %}
+      {% if 'inventario' in permisos %}<a href="/inventario" class="btn btn-navy">💊 Inventario</a>{% endif %}
+      {% if 'pacientes' in permisos %}<a href="/pacientes" class="btn btn-outline">👤 Pacientes</a>{% endif %}
+      {% if 'compras' in permisos %}<a href="/compras" class="btn btn-outline">📦 Registrar Compra</a>{% endif %}
+      {% if 'reportes' in permisos %}<a href="/reportes" class="btn btn-outline">📈 Reportes</a>{% endif %}
+      {% if 'caja' in permisos %}<a href="/caja" class="btn btn-outline">💰 Caja</a>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

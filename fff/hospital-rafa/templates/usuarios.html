@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Usuarios — Hospital Rafá{% endblock %}
+{% block header_title %}Gestión de Usuarios{% endblock %}
+{% block header_sub %}Control de accesos y roles{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h2>Usuarios del Sistema</h2><p>{{ usuarios|length }} usuarios registrados</p></div>
+  <button class="btn btn-primary" onclick="abrirModal('modalUsuario')">＋ Nuevo Usuario</button>
+</div>
+<div class="panel">
+  <table>
+    <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Creado</th><th>Acciones</th></tr></thead>
+    <tbody>
+      {% for u in usuarios %}
+      <tr>
+        <td><strong>{{ u.nombre }}</strong></td>
+        <td>{{ u.correo }}</td>
+        <td><span class="tag tag-{{ u.rol }}">{{ u.rol|capitalize }}</span></td>
+        <td><span class="tag {{ 'tag-ok' if u.activo else 'tag-out' }}">{{ '✅ Activo' if u.activo else '❌ Inactivo' }}</span></td>
+        <td style="font-size:11px;color:var(--gray-400)">{{ u.creado.strftime('%d/%m/%Y') }}</td>
+        <td style="display:flex;gap:6px">
+          <button class="btn btn-outline btn-sm" onclick="editarUsuario({{ u.id }},'{{ u.nombre }}','{{ u.correo }}','{{ u.rol }}')">✏️</button>
+          <a href="/usuarios/toggle/{{ u.id }}" class="btn btn-sm {{ 'btn-danger' if u.activo else 'btn-success' }}">{{ '🔒' if u.activo else '🔓' }}</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- MODAL NUEVO -->
+<div class="modal-overlay" id="modalUsuario">
+  <div class="modal" style="width:460px">
+    <div class="modal-header">
+      <span class="modal-title" id="modalUsuTitulo">Nuevo Usuario</span>
+      <button class="modal-close" onclick="cerrarModal('modalUsuario')">✕</button>
+    </div>
+    <form id="formUsuario" method="POST" action="/usuarios/nuevo">
+      <div class="modal-body">
+        <div class="form-grid-2">
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Nombre Completo *</label>
+            <input class="form-input" name="nombre" id="uNombre" required placeholder="Nombre del usuario">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Correo *</label>
+            <input class="form-input" name="correo" id="uCorreo" type="email" required placeholder="correo@hospitalrafa.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rol *</label>
+            <select class="form-select" name="rol" id="uRol">
+              <option value="admin">Administrador</option>
+              <option value="farmaceutico">Farmacéutico</option>
+              <option value="recepcionista">Recepcionista</option>
+              <option value="doctor">Doctor/Médico</option>
+              <option value="cajero">Cajero</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Contraseña *</label>
+            <input class="form-input" name="password" id="uPassword" type="password" placeholder="Mínimo 6 caracteres">
+          </div>
+        </div>
+        <div class="alert alert-info" style="margin-top:8px">ℹ️ El usuario podrá cambiar su contraseña después de iniciar sesión.</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="cerrarModal('modalUsuario')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">💾 Crear Usuario</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function editarUsuario(id, nombre, correo, rol) {
+  document.getElementById('modalUsuTitulo').textContent = 'Editar Usuario';
+  document.getElementById('formUsuario').action = '/usuarios/editar/' + id;
+  document.getElementById('uNombre').value = nombre;
+  document.getElementById('uCorreo').value = correo;
+  document.getElementById('uRol').value = rol;
+  document.getElementById('uPassword').placeholder = 'Dejar vacío para no cambiar';
+  document.getElementById('uPassword').removeAttribute('required');
+  abrirModal('modalUsuario');
+}
+</script>
+{% endblock %}

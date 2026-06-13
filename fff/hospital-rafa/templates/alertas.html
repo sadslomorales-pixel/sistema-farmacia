@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Alertas — Hospital Rafá{% endblock %}
+{% block header_title %}Centro de Alertas{% endblock %}
+{% block header_sub %}Stock crítico y vencimientos{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h2>Alertas del Sistema</h2></div>
+  <a href="/alertas" class="btn btn-outline">🔄 Actualizar</a>
+</div>
+
+{% if not stock_bajo and not vencidos and not por_vencer %}
+<div class="alert alert-success" style="font-size:14px;padding:16px">✅ Todo en orden — No hay alertas activas en este momento.</div>
+{% endif %}
+
+{% if vencidos %}
+<div class="panel" style="border-left:4px solid var(--red)">
+  <div class="panel-header"><span class="panel-title" style="color:var(--red)">💀 Productos VENCIDOS ({{ vencidos|length }})</span></div>
+  <table>
+    <thead><tr><th>Producto</th><th>Stock</th><th>Venció el</th><th>Acción</th></tr></thead>
+    <tbody>
+      {% for p in vencidos %}
+      <tr>
+        <td><strong>{{ p.nombre }}</strong><br><span style="font-size:10px;color:var(--gray-400)">{{ p.categoria }}</span></td>
+        <td style="color:var(--red);font-weight:700">{{ p.stock }} uds</td>
+        <td style="color:var(--red);font-weight:700">{{ p.vencimiento.strftime('%d/%m/%Y') }}</td>
+        <td><a href="/inventario" class="btn btn-danger btn-sm">Revisar</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% if por_vencer %}
+<div class="panel" style="border-left:4px solid var(--yellow)">
+  <div class="panel-header"><span class="panel-title" style="color:var(--yellow)">⏰ Por Vencer en 30 días ({{ por_vencer|length }})</span></div>
+  <table>
+    <thead><tr><th>Producto</th><th>Stock</th><th>Vence el</th><th>Días restantes</th></tr></thead>
+    <tbody>
+      {% for p in por_vencer %}
+      {% set dias = (p.vencimiento - hoy).days %}
+      <tr>
+        <td><strong>{{ p.nombre }}</strong></td>
+        <td>{{ p.stock }} uds</td>
+        <td>{{ p.vencimiento.strftime('%d/%m/%Y') }}</td>
+        <td><span class="tag tag-low">{{ dias }} días</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% if stock_bajo %}
+<div class="panel" style="border-left:4px solid var(--yellow)">
+  <div class="panel-header"><span class="panel-title" style="color:var(--yellow)">⚠️ Stock Bajo ({{ stock_bajo|length }})</span></div>
+  <table>
+    <thead><tr><th>Producto</th><th>Stock Actual</th><th>Stock Mínimo</th><th>Acción</th></tr></thead>
+    <tbody>
+      {% for p in stock_bajo %}
+      <tr>
+        <td><strong>{{ p.nombre }}</strong><br><span style="font-size:10px;color:var(--gray-400)">{{ p.categoria }}</span></td>
+        <td style="color:{{ 'var(--red)' if p.stock == 0 else 'var(--yellow)' }};font-weight:700">{{ p.stock }} uds{{ ' — AGOTADO' if p.stock == 0 }}</td>
+        <td>{{ p.stock_min }} uds</td>
+        <td><a href="/compras" class="btn btn-primary btn-sm">📦 Reabastecer</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Hospital Rafá{% endblock %}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap');
+:root {
+  --navy:#1B3A6B; --navy-dark:#122850; --teal:#2A9D8F; --teal-light:#3BBFB0;
+  --teal-pale:#E8F7F5; --white:#fff; --gray-50:#F8FAFC; --gray-100:#F1F5F9;
+  --gray-200:#E2E8F0; --gray-400:#94A3B8; --gray-600:#475569; --gray-800:#1E293B;
+  --red:#E53E3E; --red-light:#FFF5F5; --yellow:#D69E2E; --yellow-light:#FFFFF0;
+  --green:#38A169; --green-light:#F0FFF4; --sidebar:240px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--gray-50);color:var(--gray-800);display:flex;height:100vh;overflow:hidden}
+/* SIDEBAR */
+#sidebar{width:var(--sidebar);background:linear-gradient(180deg,var(--navy-dark),var(--navy));display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.logo-area{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px}
+.logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--teal),var(--teal-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.logo-text strong{display:block;font-family:'Montserrat',sans-serif;font-size:13px;color:#fff;letter-spacing:.5px}
+.logo-text span{font-size:10px;color:var(--teal-light)}
+nav{padding:12px 0;flex:1}
+.nav-section{padding:8px 16px 4px;font-size:9px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:1.5px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;color:rgba(255,255,255,.65);cursor:pointer;font-size:13px;transition:all .15s;border-left:3px solid transparent;text-decoration:none;margin:1px 0}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-item.active{background:rgba(42,157,143,.2);color:var(--teal-light);border-left-color:var(--teal-light);font-weight:600}
+.nav-item .icon{font-size:16px;width:20px;text-align:center}
+.sidebar-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:rgba(255,255,255,.4);text-align:center}
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+header{background:#fff;border-bottom:1px solid var(--gray-200);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.header-title{font-size:16px;font-weight:700;color:var(--navy)}
+.header-sub{font-size:11px;color:var(--gray-400);margin-top:1px}
+.header-right{display:flex;align-items:center;gap:12px}
+.badge-pill{background:var(--teal-pale);color:var(--teal);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--gray-100);border-radius:20px;padding:4px 12px 4px 4px;font-size:12px;font-weight:500;color:var(--gray-600)}
+.user-chip .avatar{width:28px;height:28px;background:linear-gradient(135deg,var(--navy),var(--teal));border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700}
+#content{flex:1;overflow-y:auto;padding:20px 24px}
+/* COMPONENTS */
+.panel{background:#fff;border-radius:12px;border:1px solid var(--gray-200);overflow:hidden;margin-bottom:16px}
+.panel-header{padding:14px 16px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:13px;font-weight:700;color:var(--navy)}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.page-header h2{font-size:18px;font-weight:800;color:var(--navy);font-family:'Montserrat',sans-serif}
+.page-header p{font-size:12px;color:var(--gray-400);margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--gray-50);color:var(--gray-600);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;text-align:left;border-bottom:1px solid var(--gray-200)}
+td{padding:10px 14px;border-bottom:1px solid var(--gray-100);color:var(--gray-800)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--gray-50)}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.tag-ok{background:var(--green-light);color:var(--green)}
+.tag-low{background:var(--yellow-light);color:var(--yellow)}
+.tag-out{background:var(--red-light);color:var(--red)}
+.tag-admin{background:#EBF4FF;color:#2B6CB0}
+.tag-farmaceutico{background:var(--teal-pale);color:var(--teal)}
+.tag-recepcionista{background:#FAF5FF;color:#6B46C1}
+.tag-doctor{background:var(--green-light);color:var(--green)}
+.tag-cajero{background:var(--yellow-light);color:var(--yellow)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;text-decoration:none;font-family:'Inter',sans-serif}
+.btn-primary{background:var(--teal);color:#fff}.btn-primary:hover{background:var(--teal-light)}
+.btn-navy{background:var(--navy);color:#fff}.btn-navy:hover{background:var(--navy-dark)}
+.btn-outline{background:transparent;border:1px solid var(--gray-200);color:var(--gray-600)}.btn-outline:hover{background:var(--gray-100)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-success{background:var(--green);color:#fff}
+.btn-sm{padding:5px 10px;font-size:11px}
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.form-label{font-size:11px;font-weight:600;color:var(--gray-600)}
+.form-input,.form-select{padding:8px 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;color:var(--gray-800);background:#fff;outline:none;transition:border-color .15s;width:100%}
+.form-input:focus,.form-select:focus{border-color:var(--teal)}
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-header{padding:18px 20px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:700;color:var(--navy)}
+.modal-close{width:28px;height:28px;border-radius:50%;border:none;background:var(--gray-100);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.modal-body{padding:20px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--gray-200);display:flex;justify-content:flex-end;gap:8px}
+.alert{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:500;margin-bottom:8px}
+.alert-warning{background:var(--yellow-light);color:#744210;border:1px solid #F6E05E}
+.alert-danger{background:var(--red-light);color:#742A2A;border:1px solid #FC8181}
+.alert-success{background:var(--green-light);color:#1A4731;border:1px solid #68D391}
+.alert-info{background:#EBF8FF;color:#2C5282;border:1px solid #90CDF4}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:#fff;border-radius:12px;padding:16px;border:1px solid var(--gray-200);position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.navy::before{background:var(--navy)}.stat-card.teal::before{background:var(--teal)}
+.stat-card.green::before{background:var(--green)}.stat-card.red::before{background:var(--red)}
+.stat-icon{font-size:22px;margin-bottom:8px}
+.stat-value{font-size:24px;font-weight:800;font-family:'Montserrat',sans-serif;color:var(--navy)}
+.stat-label{font-size:11px;color:var(--gray-400);margin-top:2px}
+.stat-sub{font-size:11px;margin-top:6px;font-weight:600;color:var(--gray-600)}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:2000;transform:translateY(60px);opacity:0;transition:all .3s;max-width:300px;border-left:4px solid var(--teal)}
+#toast.show{transform:translateY(0);opacity:1}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:10px}
+.search-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.search-wrap{position:relative;flex:1}
+.search-wrap span{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--gray-400)}
+.search-wrap input{width:100%;padding:8px 12px 8px 30px;border:1px solid var(--gray-200);border-radius:8px;font-size:13px;outline:none}
+.search-wrap input:focus{border-color:var(--teal)}
+.flash-messages{padding:0 24px;margin-top:12px}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  #sidebar{display:none}
+  .stats-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+<aside id="sidebar">
+  <div class="logo-area">
+    <div class="logo-icon">🏥</div>
+    <div class="logo-text">
+      <strong>HOSPITAL RAFÁ</strong>
+      <span>Sistema de Farmacia</span>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-section">Principal</div>
+    <a class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}" href="/dashboard"><span class="icon">📊</span> Dashboard</a>
+    {% if 'ventas' in permisos %}<a class="nav-item {% if request.endpoint == 'ventas' %}active{% endif %}" href="/ventas"><span class="icon">🛒</span> Nueva Venta</a>{% endif %}
+    <div class="nav-section">Gestión</div>
+    {% if 'inventario' in permisos %}<a class="nav-item {% if request.endpoint == 'inventario' %}active{% endif %}" href="/inventario"><span class="icon">💊</span> Inventario</a>{% endif %}
+    {% if 'compras' in permisos %}<a class="nav-item {% if request.endpoint == 'compras' %}active{% endif %}" href="/compras"><span class="icon">📦</span> Compras</a>{% endif %}
+    {% if 'ventas' in permisos %}<a class="nav-item {% if request.endpoint == 'historial' %}active{% endif %}" href="/historial"><span class="icon">📋</span> Historial Ventas</a>{% endif %}
+    {% if 'pacientes' in permisos %}<a class="nav-item {% if request.endpoint == 'pacientes' %}active{% endif %}" href="/pacientes"><span class="icon">👤</span> Pacientes</a>{% endif %}
+    {% if 'caja' in permisos %}<a class="nav-item {% if request.endpoint == 'caja' %}active{% endif %}" href="/caja"><span class="icon">💰</span> Caja</a>{% endif %}
+    <div class="nav-section">Análisis</div>
+    {% if 'alertas' in permisos %}<a class="nav-item {% if request.endpoint == 'alertas' %}active{% endif %}" href="/alertas"><span class="icon">🔔</span> Alertas</a>{% endif %}
+    {% if 'reportes' in permisos %}<a class="nav-item {% if request.endpoint == 'reportes' %}active{% endif %}" href="/reportes"><span class="icon">📈</span> Reportes</a>{% endif %}
+    {% if 'usuarios' in permisos %}
+    <div class="nav-section">Administración</div>
+    <a class="nav-item {% if request.endpoint == 'usuarios' %}active{% endif %}" href="/usuarios"><span class="icon">👥</span> Usuarios</a>
+    {% endif %}
+  </nav>
+  <div class="sidebar-footer">v1.0 — Hospital Rafá</div>
+</aside>
+
+<div id="main">
+  <header>
+    <div>
+      <div class="header-title">{% block header_title %}Hospital Rafá{% endblock %}</div>
+      <div class="header-sub">{% block header_sub %}{% endblock %}</div>
+    </div>
+    <div class="header-right">
+      <span class="badge-pill" id="clockBadge">⏰</span>
+      <div class="user-chip">
+        <div class="avatar">{{ session.nombre[:2]|upper }}</div>
+        {{ session.nombre }} — <strong>{{ session.rol|capitalize }}</strong>
+        &nbsp;|&nbsp;<a href="/logout" style="color:var(--red);font-size:11px;text-decoration:none">Salir</a>
+      </div>
+    </div>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-messages">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}">
+      {{ '✅' if category == 'success' else '❌' }} {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <div id="content">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<div id="toast"></div>
+<script>
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}
+function cerrarModal(id){document.getElementById(id).classList.remove('open')}
+function abrirModal(id){document.getElementById(id).classList.add('open')}
+setInterval(()=>{const n=new Date();document.getElementById('clockBadge').textContent='⏰ '+n.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'})},1000)
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

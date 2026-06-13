@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Caja — Hospital Rafá{% endblock %}
+{% block header_title %}Control de Caja{% endblock %}
+{% block header_sub %}Movimientos y arqueo del día{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h2>Caja del Día</h2><p>{{ movimientos|length }} movimientos</p></div>
+  <button class="btn btn-primary" onclick="abrirModal('modalMovimiento')">＋ Registrar Movimiento</button>
+</div>
+
+<div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+  <div class="stat-card teal">
+    <div class="stat-icon">💰</div>
+    <div class="stat-value">Q{{ "%.2f"|format(total_ventas) }}</div>
+    <div class="stat-label">Total en ventas hoy</div>
+  </div>
+  <div class="stat-card navy">
+    <div class="stat-icon">📊</div>
+    <div class="stat-value">{{ movimientos|length }}</div>
+    <div class="stat-label">Movimientos registrados</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-icon">🧾</div>
+    <div class="stat-value">Q{{ "%.2f"|format(movimientos|selectattr('tipo','equalto','venta')|sum(attribute='monto')) }}</div>
+    <div class="stat-label">Total cobrado</div>
+  </div>
+</div>
+
+<div class="panel">
+  <table>
+    <thead><tr><th>Hora</th><th>Tipo</th><th>Descripción</th><th>Monto</th></tr></thead>
+    <tbody>
+      {% for m in movimientos %}
+      <tr>
+        <td style="font-size:11px">{{ m.fecha.strftime('%H:%M:%S') }}</td>
+        <td><span class="tag {{ 'tag-ok' if m.tipo=='venta' else 'tag-low' }}">{{ m.tipo|capitalize }}</span></td>
+        <td>{{ m.descripcion or '—' }}</td>
+        <td style="font-weight:700;color:{{ 'var(--teal)' if m.monto >= 0 else 'var(--red)' }}">Q{{ "%.2f"|format(m.monto) }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" style="text-align:center;padding:30px;color:var(--gray-400)">Sin movimientos hoy</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="modal-overlay" id="modalMovimiento">
+  <div class="modal" style="width:420px">
+    <div class="modal-header">
+      <span class="modal-title">Registrar Movimiento de Caja</span>
+      <button class="modal-close" onclick="cerrarModal('modalMovimiento')">✕</button>
+    </div>
+    <form method="POST" action="/caja/movimiento">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select class="form-select" name="tipo">
+            <option value="apertura">Apertura de caja</option>
+            <option value="cierre">Cierre de caja</option>
+            <option value="devolucion">Devolución</option>
+            <option value="gasto">Gasto</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Monto (Q)</label>
+          <input class="form-input" name="monto" type="number" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <input class="form-input" name="descripcion" placeholder="Descripción del movimiento">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="cerrarModal('modalMovimiento')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">💾 Registrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
